@@ -5,6 +5,10 @@ import com.jeff.inventorymanagement.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
+
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
@@ -17,5 +21,35 @@ public class CategoryService {
 
     public List<Category> findAll() {
         return categoryRepository.findAll();
+    }
+
+    public Category findById(Long id) {
+        return categoryRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+    }
+
+    public Category save(Category category) {
+        if (categoryRepository.existsByName(category.getName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Category name already exists");
+        }
+        return categoryRepository.save(category);
+    }
+
+    public Category update(Long id, Category updatedCategory) {
+        Category target = findById(id);
+        
+        // Check if name is not already taken
+        if (!target.getName().equals(updatedCategory.getName()) 
+                && categoryRepository.existsByName(updatedCategory.getName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Category name already exists");
+        }
+        
+        target.setName(updatedCategory.getName());
+        return categoryRepository.save(target);
+    }
+
+    public void delete(Long id) {
+        Category category = findById(id);
+        categoryRepository.delete(category);
     }
 }

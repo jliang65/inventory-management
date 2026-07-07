@@ -1,6 +1,6 @@
 package com.jeff.inventorymanagement.controller;
 
-import com.jeff.inventorymanagement.entity.Supplier;
+import com.jeff.inventorymanagement.dto.SupplierDto;
 import com.jeff.inventorymanagement.service.SupplierService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,24 +30,24 @@ public class SupplierController {
     }
 
     @GetMapping
-    public List<Supplier> getAllSuppliers() {
-        return supplierService.findAll();
+    public List<SupplierDto> getAllSuppliers() {
+        return supplierService.findAllAsDto();
     }
 
     @GetMapping("/{id}")
-    public Supplier getSupplierById(@PathVariable Long id) {
-        return supplierService.findById(id);
+    public SupplierDto getSupplierById(@PathVariable Long id) {
+        return supplierService.findByIdAsDto(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Supplier createSupplier(@Valid @RequestBody Supplier supplier) {
-        return supplierService.save(supplier);
+    public SupplierDto createSupplier(@Valid @RequestBody SupplierDto supplier) {
+        return supplierService.saveFromDto(supplier);
     }
 
     @PutMapping("/{id}")
-    public Supplier updateSupplier(@PathVariable Long id, @Valid @RequestBody Supplier supplier) {
-        return supplierService.update(id, supplier);
+    public SupplierDto updateSupplier(@PathVariable Long id, @Valid @RequestBody SupplierDto supplier) {
+        return supplierService.updateFromDto(id, supplier);
     }
 
     @DeleteMapping("/{id}")

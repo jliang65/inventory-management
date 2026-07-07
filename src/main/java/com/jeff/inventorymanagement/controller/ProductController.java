@@ -1,6 +1,7 @@
 package com.jeff.inventorymanagement.controller;
 
-import com.jeff.inventorymanagement.entity.Product;
+import com.jeff.inventorymanagement.dto.ProductRequest;
+import com.jeff.inventorymanagement.dto.ProductResponse;
 import com.jeff.inventorymanagement.service.ProductService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,24 +30,24 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.findAll();
+    public List<ProductResponse> getAllProducts() {
+        return productService.findAllAsResponse();
     }
 
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productService.findById(id);
+    public ProductResponse getProductById(@PathVariable Long id) {
+        return productService.findByIdAsResponse(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Product createProduct(@Valid @RequestBody Product product) {
-        return productService.save(product);
+    public ProductResponse createProduct(@Valid @RequestBody ProductRequest request) {
+        return productService.saveFromRequest(request);
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
-        return productService.update(id, product);
+    public ProductResponse updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
+        return productService.updateFromRequest(id, request);
     }
 
     @DeleteMapping("/{id}")

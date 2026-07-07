@@ -1,24 +1,13 @@
-package com.jeff.inventorymanagement.entity;
+package com.jeff.inventorymanagement.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import jakarta.validation.constraints.Min;
 
-@Entity
-@Table(name = "products")
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class ProductRequest {
 
     @NotBlank(message = "SKU is required")
     private String sku;
@@ -28,32 +17,19 @@ public class Product {
 
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    private Long categoryId;
 
-    @ManyToOne
-    @JoinColumn(name = "supplier_id")
-    private Supplier supplier;
+    private Long supplierId;
 
     @NotNull(message = "Unit price is required")
+    @Min(value = 0, message = "Unit price cannot be negative")
     private BigDecimal unitPrice;
 
     @Min(value = 0, message = "Reorder level cannot be negative")
-    private Integer reorderLevel = 0;
+    private Integer reorderLevel;
 
-    @Column(nullable = false)
+    @JsonSetter(nulls = Nulls.FAIL)
     private Boolean active = true;
-
-    public Product() {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getSku() {
         return sku;
@@ -79,20 +55,20 @@ public class Product {
         this.description = description;
     }
 
-    public Category getCategory() {
-        return category;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
-    public Supplier getSupplier() {
-        return supplier;
+    public Long getSupplierId() {
+        return supplierId;
     }
 
-    public void setSupplier(Supplier supplier) {
-        this.supplier = supplier;
+    public void setSupplierId(Long supplierId) {
+        this.supplierId = supplierId;
     }
 
     public BigDecimal getUnitPrice() {

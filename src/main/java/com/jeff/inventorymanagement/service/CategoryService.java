@@ -8,6 +8,8 @@ import java.util.List;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import com.jeff.inventorymanagement.dto.CategoryDto;
+
 
 @Service
 public class CategoryService {
@@ -51,5 +53,45 @@ public class CategoryService {
     public void delete(Long id) {
         Category category = findById(id);
         categoryRepository.delete(category);
+    }
+
+    public CategoryDto toDto(Category category) {
+        CategoryDto dto = new CategoryDto();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        return dto;
+    }
+
+    public Category toEntity(CategoryDto dto) {
+        Category category = new Category();
+        category.setName(dto.getName());
+        return category;
+    }
+
+    public CategoryDto findByIdAsDto(Long id) {
+        return toDto(findById(id));
+    }
+
+    public CategoryDto saveFromDto(CategoryDto dto) {
+        Category category = toEntity(dto);
+        return toDto(save(category));
+    }
+
+    public List<CategoryDto> findAllAsDto() {
+        return findAll().stream()
+            .map(this::toDto)
+            .toList();
+    }
+
+    public CategoryDto updateFromDto(Long id, CategoryDto dto) {
+        Category target = findById(id);
+        
+        if (!target.getName().equals(dto.getName()) 
+                && categoryRepository.existsByName(dto.getName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Category name already exists");
+        }
+        
+        target.setName(dto.getName());
+        return toDto(categoryRepository.save(target));
     }
 }

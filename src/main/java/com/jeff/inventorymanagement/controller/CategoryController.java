@@ -1,6 +1,6 @@
 package com.jeff.inventorymanagement.controller;
 
-import com.jeff.inventorymanagement.entity.Category;
+import com.jeff.inventorymanagement.dto.CategoryDto;
 import com.jeff.inventorymanagement.service.CategoryService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,26 +28,25 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    // Add endpoints: @GetMapping, @PostMapping, @PutMapping, @DeleteMapping
     @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryService.findAll();
+    public List<CategoryDto> getAllCategories() {
+        return categoryService.findAllAsDto();
     }
 
     @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable Long id) {
-        return categoryService.findById(id);
+    public CategoryDto getCategoryById(@PathVariable Long id) {
+        return categoryService.findByIdAsDto(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Category createCategory(@Valid @RequestBody Category category) {
-        return categoryService.save(category);
+    public CategoryDto createCategory(@Valid @RequestBody CategoryDto dto) {
+        return categoryService.saveFromDto(dto);
     }
 
     @PutMapping("/{id}")
-    public Category updateCategory(@PathVariable Long id, @Valid @RequestBody Category category) {
-        return categoryService.update(id, category);
+    public CategoryDto updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDto dto) {
+        return categoryService.updateFromDto(id, dto);
     }
 
     @DeleteMapping("/{id}")

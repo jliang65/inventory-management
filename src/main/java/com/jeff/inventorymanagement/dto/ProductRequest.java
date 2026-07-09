@@ -25,9 +25,6 @@ public class ProductRequest {
     @Min(value = 0, message = "Unit price cannot be negative")
     private BigDecimal unitPrice;
 
-    @Min(value = 0, message = "Reorder level cannot be negative")
-    private Integer reorderLevel;
-
     @JsonSetter(nulls = Nulls.FAIL)
     private Boolean active = true;
 
@@ -77,14 +74,6 @@ public class ProductRequest {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
-    }
-
-    public Integer getReorderLevel() {
-        return reorderLevel;
-    }
-
-    public void setReorderLevel(Integer reorderLevel) {
-        this.reorderLevel = reorderLevel;
     }
 
     public Boolean getActive() {

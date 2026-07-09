@@ -14,6 +14,9 @@ public class InventoryRequest {
     @Min(value = 0, message = "Quantity cannot be negative")
     private Integer quantity;
 
+    @Min(value = 0, message = "Reorder level cannot be negative")
+    private Integer reorderLevel = 0;
+
     public Long getProductId() {
         return productId;
     }
@@ -36,5 +39,13 @@ public class InventoryRequest {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public Integer getReorderLevel() {
+        return reorderLevel;
+    }
+
+    public void setReorderLevel(Integer reorderLevel) {
+        this.reorderLevel = reorderLevel;
     }
 }

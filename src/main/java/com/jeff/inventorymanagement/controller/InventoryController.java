@@ -34,4 +34,9 @@ public class InventoryController {
     public List<InventoryResponse> getInventoryByLocationId(@PathVariable Long locationId) {
         return inventoryService.findByLocationIdAsResponse(locationId);
     }
+    
+    @GetMapping("/low-stock")
+    public List<InventoryResponse> getLowStockInventory() {
+        return inventoryService.findLowStockAsResponse();
+    }
 }

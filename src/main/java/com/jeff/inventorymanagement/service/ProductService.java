@@ -58,7 +58,6 @@ public class ProductService {
         target.setCategory(updatedProduct.getCategory());
         target.setSupplier(updatedProduct.getSupplier());
         target.setUnitPrice(updatedProduct.getUnitPrice());
-        target.setReorderLevel(updatedProduct.getReorderLevel());
         target.setActive(updatedProduct.getActive());
         
         return productRepository.save(target);
@@ -87,7 +86,6 @@ public class ProductService {
         }
         
         response.setUnitPrice(product.getUnitPrice());
-        response.setReorderLevel(product.getReorderLevel());
         response.setActive(product.getActive());
         return response;
     }
@@ -111,7 +109,6 @@ public class ProductService {
         }
         
         product.setUnitPrice(request.getUnitPrice());
-        product.setReorderLevel(request.getReorderLevel());
         product.setActive(request.getActive());
         return product;
     }
@@ -163,7 +160,6 @@ public class ProductService {
         }
         
         target.setUnitPrice(request.getUnitPrice());
-        target.setReorderLevel(request.getReorderLevel());
         target.setActive(request.getActive());
         
         return toResponse(productRepository.save(target));

@@ -20,6 +20,9 @@ public class Inventory {
     @Column(nullable = false)
     private Integer quantity = 0;
 
+    @Column(nullable = false)
+    private Integer reorderLevel = 0;
+
     public Long getId() {
         return id;
     }
@@ -50,5 +53,13 @@ public class Inventory {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public Integer getReorderLevel() {
+        return reorderLevel;
+    }
+
+    public void setReorderLevel(Integer reorderLevel) {
+        this.reorderLevel = reorderLevel;
     }
 }

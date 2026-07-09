@@ -11,7 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import jakarta.validation.constraints.Min;
 
 @Entity
 @Table(name = "products")
@@ -38,9 +37,6 @@ public class Product {
 
     @NotNull(message = "Unit price is required")
     private BigDecimal unitPrice;
-
-    @Min(value = 0, message = "Reorder level cannot be negative")
-    private Integer reorderLevel = 0;
 
     @Column(nullable = false)
     private Boolean active = true;
@@ -101,14 +97,6 @@ public class Product {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
-    }
-
-    public Integer getReorderLevel() {
-        return reorderLevel;
-    }
-
-    public void setReorderLevel(Integer reorderLevel) {
-        this.reorderLevel = reorderLevel;
     }
 
     public Boolean getActive() {

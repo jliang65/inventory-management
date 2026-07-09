@@ -43,6 +43,7 @@ public class InventoryService {
         response.setLocationId(inventory.getLocation().getId());
         response.setLocationName(inventory.getLocation().getName());
         response.setQuantity(inventory.getQuantity());
+        response.setReorderLevel(inventory.getReorderLevel());
         return response;
     }
 
@@ -62,6 +63,16 @@ public class InventoryService {
 
     public List<InventoryResponse> findByLocationIdAsResponse(Long locationId) {
         return findByLocationId(locationId).stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    public List<Inventory> findLowStock() {
+        return inventoryRepository.findLowStock();
+    }
+
+    public List<InventoryResponse> findLowStockAsResponse() {
+        return findLowStock().stream()
             .map(this::toResponse)
             .toList();
     }

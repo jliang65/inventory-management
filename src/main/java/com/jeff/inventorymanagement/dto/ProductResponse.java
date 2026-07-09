@@ -12,7 +12,6 @@ public class ProductResponse {
     private Long supplierId;
     private String supplierName;
     private BigDecimal unitPrice;
-    private Integer reorderLevel;
     private Boolean active;
 
     public Long getId() {
@@ -85,14 +84,6 @@ public class ProductResponse {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
-    }
-
-    public Integer getReorderLevel() {
-        return reorderLevel;
-    }
-
-    public void setReorderLevel(Integer reorderLevel) {
-        this.reorderLevel = reorderLevel;
     }
 
     public Boolean getActive() {

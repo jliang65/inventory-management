@@ -7,6 +7,7 @@ public class InventoryResponse {
     private Long locationId;
     private String locationName;
     private Integer quantity;
+    private Integer reorderLevel;
 
     public Long getId() {
         return id;
@@ -54,5 +55,13 @@ public class InventoryResponse {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public Integer getReorderLevel() {
+        return reorderLevel;
+    }
+
+    public void setReorderLevel(Integer reorderLevel) {
+        this.reorderLevel = reorderLevel;
     }
 }

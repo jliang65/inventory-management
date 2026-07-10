@@ -1,9 +1,12 @@
 package com.jeff.inventorymanagement.controller;
 
+import com.jeff.inventorymanagement.dto.InventoryRequest;
 import com.jeff.inventorymanagement.dto.InventoryResponse;
 import com.jeff.inventorymanagement.service.InventoryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/inventory")
@@ -38,5 +41,11 @@ public class InventoryController {
     @GetMapping("/low-stock")
     public List<InventoryResponse> getLowStockInventory() {
         return inventoryService.findLowStockAsResponse();
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public InventoryResponse createInventory(@Valid @RequestBody InventoryRequest request) {
+        return inventoryService.saveFromRequest(request);
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     List<Inventory> findByProductId(Long productId);
     List<Inventory> findByLocationId(Long productId);
+    boolean existsByProductIdAndLocationId(Long productId, Long locationId);
+    
     @Query("""
         SELECT i
         FROM Inventory i

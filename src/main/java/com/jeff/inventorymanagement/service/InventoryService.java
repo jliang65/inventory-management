@@ -1,8 +1,13 @@
 package com.jeff.inventorymanagement.service;
 
+import com.jeff.inventorymanagement.dto.InventoryRequest;
 import com.jeff.inventorymanagement.dto.InventoryResponse;
 import com.jeff.inventorymanagement.entity.Inventory;
+import com.jeff.inventorymanagement.entity.Location;
+import com.jeff.inventorymanagement.entity.Product;
 import com.jeff.inventorymanagement.repository.InventoryRepository;
+import com.jeff.inventorymanagement.repository.LocationRepository;
+import com.jeff.inventorymanagement.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -11,9 +16,15 @@ import java.util.List;
 @Service
 public class InventoryService {
     private final InventoryRepository inventoryRepository;
+    private final ProductRepository productRepository;
+    private final LocationRepository locationRepository;
 
-    public InventoryService(InventoryRepository inventoryRepository) {
+    public InventoryService(InventoryRepository inventoryRepository,
+                            ProductRepository productRepository,
+                            LocationRepository locationRepository) {
         this.inventoryRepository = inventoryRepository;
+        this.productRepository = productRepository;
+        this.locationRepository = locationRepository;
     }
 
     public List<Inventory> findAll() {
@@ -47,6 +58,22 @@ public class InventoryService {
         return response;
     }
 
+    public Inventory toEntity(InventoryRequest request) {
+        Inventory inventory = new Inventory();
+        
+        Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
+        inventory.setProduct(product);
+        
+        Location location = locationRepository.findById(request.getLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
+        inventory.setLocation(location);
+        
+        inventory.setQuantity(request.getQuantity());
+        inventory.setReorderLevel(request.getReorderLevel());
+        return inventory;
+    }
+
     public List<Inventory> findByProductId(Long productId) {
         return inventoryRepository.findByProductId(productId);
     }
@@ -75,5 +102,16 @@ public class InventoryService {
         return findLowStock().stream()
             .map(this::toResponse)
             .toList();
+    }
+
+    public InventoryResponse saveFromRequest(InventoryRequest request) {
+        if (inventoryRepository.existsByProductIdAndLocationId(
+                request.getProductId(), request.getLocationId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, 
+                "Inventory already exists for this product-location combination");
+        }
+        
+        Inventory inventory = toEntity(request);
+        return toResponse(inventoryRepository.save(inventory));
     }
 }

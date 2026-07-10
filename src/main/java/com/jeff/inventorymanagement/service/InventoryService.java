@@ -46,6 +46,24 @@ public class InventoryService {
             .toList();
     }
 
+    public List<InventoryResponse> findFilteredAsResponse(Long productId, Long locationId) {
+        List<Inventory> results;
+        
+        if (productId != null && locationId != null) {
+            results = findByProductIdAndLocationId(productId, locationId);
+        } else if (productId != null) {
+            results = findByProductId(productId);
+        } else if (locationId != null) {
+            results = findByLocationId(locationId);
+        } else {
+            results = findAll();
+        }
+        
+        return results.stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
     public InventoryResponse toResponse(Inventory inventory) {
         InventoryResponse response = new InventoryResponse();
         response.setId(inventory.getId());
@@ -94,6 +112,10 @@ public class InventoryService {
             .toList();
     }
 
+    public List<Inventory> findByProductIdAndLocationId(Long productId, Long locationId) {
+        return inventoryRepository.findByProductIdAndLocationId(productId, locationId);
+    }
+
     public List<Inventory> findLowStock() {
         return inventoryRepository.findLowStock();
     }
@@ -110,7 +132,7 @@ public class InventoryService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, 
                 "Inventory already exists for this product-location combination");
         }
-        
+
         Inventory inventory = toEntity(request);
         return toResponse(inventoryRepository.save(inventory));
     }

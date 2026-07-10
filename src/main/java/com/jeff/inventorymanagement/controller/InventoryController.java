@@ -19,8 +19,10 @@ public class InventoryController {
     }
 
     @GetMapping
-    public List<InventoryResponse> getAllInventory() {
-        return inventoryService.findAllAsResponse();
+    public List<InventoryResponse> getInventory(
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) Long locationId) {
+        return inventoryService.findFilteredAsResponse(productId, locationId);
     }
 
     @GetMapping("/{id}")
@@ -28,16 +30,6 @@ public class InventoryController {
         return inventoryService.findByIdAsResponse(id);
     }
 
-    @GetMapping("/products/{productId}")
-    public List<InventoryResponse> getInventoryByProductId(@PathVariable Long productId) {
-        return inventoryService.findByProductIdAsResponse(productId);
-    }
-
-    @GetMapping("/locations/{locationId}")
-    public List<InventoryResponse> getInventoryByLocationId(@PathVariable Long locationId) {
-        return inventoryService.findByLocationIdAsResponse(locationId);
-    }
-    
     @GetMapping("/low-stock")
     public List<InventoryResponse> getLowStockInventory() {
         return inventoryService.findLowStockAsResponse();

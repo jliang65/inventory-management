@@ -2,7 +2,10 @@ package com.jeff.inventorymanagement.controller;
 
 import com.jeff.inventorymanagement.dto.InventoryRequest;
 import com.jeff.inventorymanagement.dto.InventoryResponse;
+import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
+import com.jeff.inventorymanagement.dto.StockInRequest;
 import com.jeff.inventorymanagement.service.InventoryService;
+import com.jeff.inventorymanagement.service.InventoryTransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -13,9 +16,30 @@ import jakarta.validation.Valid;
 public class InventoryController {
 
     private final InventoryService inventoryService;
+    private final InventoryTransactionService inventoryTransactionService;
 
-    public InventoryController(InventoryService inventoryService) {
+    public InventoryController(InventoryService inventoryService,
+                               InventoryTransactionService inventoryTransactionService) {
         this.inventoryService = inventoryService;
+        this.inventoryTransactionService = inventoryTransactionService;
+    }
+
+    @PostMapping("/stock-in")
+    public InventoryTransactionResponse stockIn(@Valid @RequestBody StockInRequest request) {
+        return inventoryTransactionService.stockIn(request);
+    }
+
+    @GetMapping("/transactions")
+    public List<InventoryTransactionResponse> getTransactions(
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) Long locationId,
+            @RequestParam(required = false) String type) {
+        return inventoryTransactionService.findFilteredAsResponse(productId, locationId, type);
+    }
+
+    @GetMapping("/transactions/{id}")
+    public InventoryTransactionResponse getTransactionById(@PathVariable Long id) {
+        return inventoryTransactionService.findByIdAsResponse(id);
     }
 
     @GetMapping

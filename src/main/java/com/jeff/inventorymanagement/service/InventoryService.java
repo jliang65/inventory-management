@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InventoryService {
@@ -50,7 +51,9 @@ public class InventoryService {
         List<Inventory> results;
         
         if (productId != null && locationId != null) {
-            results = findByProductIdAndLocationId(productId, locationId);
+            results = findByProductIdAndLocationId(productId, locationId)
+                .map(List::of)
+                .orElse(List.of());
         } else if (productId != null) {
             results = findByProductId(productId);
         } else if (locationId != null) {
@@ -112,7 +115,7 @@ public class InventoryService {
             .toList();
     }
 
-    public List<Inventory> findByProductIdAndLocationId(Long productId, Long locationId) {
+    public Optional<Inventory> findByProductIdAndLocationId(Long productId, Long locationId) {
         return inventoryRepository.findByProductIdAndLocationId(productId, locationId);
     }
 

@@ -3,7 +3,7 @@ package com.jeff.inventorymanagement.controller;
 import com.jeff.inventorymanagement.dto.InventoryRequest;
 import com.jeff.inventorymanagement.dto.InventoryResponse;
 import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
-import com.jeff.inventorymanagement.dto.StockInRequest;
+import com.jeff.inventorymanagement.dto.StockInOutRequest;
 import com.jeff.inventorymanagement.service.InventoryService;
 import com.jeff.inventorymanagement.service.InventoryTransactionService;
 import org.springframework.http.HttpStatus;
@@ -25,8 +25,13 @@ public class InventoryController {
     }
 
     @PostMapping("/stock-in")
-    public InventoryTransactionResponse stockIn(@Valid @RequestBody StockInRequest request) {
+    public InventoryTransactionResponse stockIn(@Valid @RequestBody StockInOutRequest request) {
         return inventoryTransactionService.stockIn(request);
+    }
+
+    @PostMapping("/stock-out")
+    public InventoryTransactionResponse stockOut(@Valid @RequestBody StockInOutRequest request) {
+        return inventoryTransactionService.stockOut(request);
     }
 
     @GetMapping("/transactions")

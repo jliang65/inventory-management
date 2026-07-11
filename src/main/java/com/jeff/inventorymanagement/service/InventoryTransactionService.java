@@ -1,7 +1,7 @@
 package com.jeff.inventorymanagement.service;
 
 import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
-import com.jeff.inventorymanagement.dto.StockInRequest;
+import com.jeff.inventorymanagement.dto.StockInOutRequest;
 import com.jeff.inventorymanagement.entity.Inventory;
 import com.jeff.inventorymanagement.entity.InventoryTransaction;
 import com.jeff.inventorymanagement.entity.Location;
@@ -105,7 +105,7 @@ public class InventoryTransactionService {
     }
 
     @Transactional
-    public InventoryTransactionResponse stockIn(StockInRequest request) {
+    public InventoryTransactionResponse stockIn(StockInOutRequest request) {
         Product product = productRepository.findById(request.getProductId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
 
@@ -121,17 +121,53 @@ public class InventoryTransactionService {
                 return inventoryRepository.save(newInventory);
             });
 
-        int previous = inventory.getQuantity();
-        int updated = previous + request.getQuantity();
-        inventory.setQuantity(updated);
+        int previousQuantity = inventory.getQuantity();
+        int newQuantity = previousQuantity + request.getQuantity();
+        inventory.setQuantity(newQuantity);
 
         InventoryTransaction transaction = new InventoryTransaction();
         transaction.setProduct(product);
         transaction.setLocation(location);
         transaction.setTransactionType(TransactionType.STOCK_IN);
         transaction.setQuantity(request.getQuantity());
-        transaction.setPreviousQuantity(previous);
-        transaction.setNewQuantity(updated);
+        transaction.setPreviousQuantity(previousQuantity);
+        transaction.setNewQuantity(newQuantity);
+        transaction.setReason(request.getReason());
+
+        inventoryRepository.save(inventory);
+        InventoryTransaction record = inventoryTransactionRepository.save(transaction);
+
+        return toResponse(record);
+    }
+
+    @Transactional
+    public InventoryTransactionResponse stockOut(StockInOutRequest request) {
+        Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
+
+        Location location = locationRepository.findById(request.getLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
+
+        Inventory inventory = inventoryService.findByProductIdAndLocationId(
+                request.getProductId(), request.getLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "No inventory found for this product and location"));
+
+        int previousQuantity = inventory.getQuantity();
+        if (previousQuantity < request.getQuantity()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock");
+        }
+
+        int newQuantity = previousQuantity - request.getQuantity();
+        inventory.setQuantity(newQuantity);
+
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setProduct(product);
+        transaction.setLocation(location);
+        transaction.setTransactionType(TransactionType.STOCK_OUT);
+        transaction.setQuantity(request.getQuantity());
+        transaction.setPreviousQuantity(previousQuantity);
+        transaction.setNewQuantity(newQuantity);
         transaction.setReason(request.getReason());
 
         inventoryRepository.save(inventory);

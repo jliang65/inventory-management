@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public class StockInRequest {
+public class StockInOutRequest {
     @NotNull(message = "Product ID is required")
     private Long productId;
 

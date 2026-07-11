@@ -89,8 +89,6 @@ public class InventoryService {
         Location location = locationRepository.findById(request.getLocationId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
         inventory.setLocation(location);
-        
-        inventory.setQuantity(request.getQuantity());
         inventory.setReorderLevel(request.getReorderLevel());
         return inventory;
     }

@@ -1,6 +1,7 @@
 package com.jeff.inventorymanagement.service;
 
 import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
+import com.jeff.inventorymanagement.dto.StockAdjustRequest;
 import com.jeff.inventorymanagement.dto.StockInOutRequest;
 import com.jeff.inventorymanagement.entity.Inventory;
 import com.jeff.inventorymanagement.entity.InventoryTransaction;
@@ -166,6 +167,42 @@ public class InventoryTransactionService {
         transaction.setLocation(location);
         transaction.setTransactionType(TransactionType.STOCK_OUT);
         transaction.setQuantity(request.getQuantity());
+        transaction.setPreviousQuantity(previousQuantity);
+        transaction.setNewQuantity(newQuantity);
+        transaction.setReason(request.getReason());
+
+        inventoryRepository.save(inventory);
+        InventoryTransaction record = inventoryTransactionRepository.save(transaction);
+
+        return toResponse(record);
+    }
+
+    @Transactional
+    public InventoryTransactionResponse adjust(StockAdjustRequest request) {
+        Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
+
+        Location location = locationRepository.findById(request.getLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
+
+        Inventory inventory = inventoryService.findByProductIdAndLocationId(
+                request.getProductId(), request.getLocationId())
+            .orElseGet(() -> {
+                Inventory newInventory = new Inventory();
+                newInventory.setProduct(product);
+                newInventory.setLocation(location);
+                return inventoryRepository.save(newInventory);
+            });
+
+        int previousQuantity = inventory.getQuantity();
+        int newQuantity = request.getNewQuantity();
+        inventory.setQuantity(newQuantity);
+
+        InventoryTransaction transaction = new InventoryTransaction();
+        transaction.setProduct(product);
+        transaction.setLocation(location);
+        transaction.setTransactionType(TransactionType.ADJUSTMENT);
+        transaction.setQuantity(Math.abs(newQuantity - previousQuantity));
         transaction.setPreviousQuantity(previousQuantity);
         transaction.setNewQuantity(newQuantity);
         transaction.setReason(request.getReason());

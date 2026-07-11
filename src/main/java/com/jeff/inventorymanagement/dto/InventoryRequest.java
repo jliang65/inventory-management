@@ -10,10 +10,6 @@ public class InventoryRequest {
     @NotNull(message = "Location ID is required")
     private Long locationId;
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 0, message = "Quantity cannot be negative")
-    private Integer quantity;
-
     @Min(value = 0, message = "Reorder level cannot be negative")
     private Integer reorderLevel = 0;
 
@@ -31,14 +27,6 @@ public class InventoryRequest {
 
     public void setLocationId(Long locationId) {
         this.locationId = locationId;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
     }
 
     public Integer getReorderLevel() {

@@ -3,6 +3,7 @@ package com.jeff.inventorymanagement.controller;
 import com.jeff.inventorymanagement.dto.InventoryRequest;
 import com.jeff.inventorymanagement.dto.InventoryResponse;
 import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
+import com.jeff.inventorymanagement.dto.StockAdjustRequest;
 import com.jeff.inventorymanagement.dto.StockInOutRequest;
 import com.jeff.inventorymanagement.service.InventoryService;
 import com.jeff.inventorymanagement.service.InventoryTransactionService;
@@ -32,6 +33,11 @@ public class InventoryController {
     @PostMapping("/stock-out")
     public InventoryTransactionResponse stockOut(@Valid @RequestBody StockInOutRequest request) {
         return inventoryTransactionService.stockOut(request);
+    }
+
+    @PostMapping("/adjust")
+    public InventoryTransactionResponse adjust(@Valid @RequestBody StockAdjustRequest request) {
+        return inventoryTransactionService.adjust(request);
     }
 
     @GetMapping("/transactions")

@@ -5,6 +5,7 @@ import com.jeff.inventorymanagement.dto.InventoryResponse;
 import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
 import com.jeff.inventorymanagement.dto.StockAdjustRequest;
 import com.jeff.inventorymanagement.dto.StockInOutRequest;
+import com.jeff.inventorymanagement.dto.StockTransferRequest;
 import com.jeff.inventorymanagement.service.InventoryService;
 import com.jeff.inventorymanagement.service.InventoryTransactionService;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,11 @@ public class InventoryController {
     @PostMapping("/adjust")
     public InventoryTransactionResponse adjust(@Valid @RequestBody StockAdjustRequest request) {
         return inventoryTransactionService.adjust(request);
+    }
+
+    @PostMapping("/transfer")
+    public List<InventoryTransactionResponse> transfer(@Valid @RequestBody StockTransferRequest request) {
+        return inventoryTransactionService.transfer(request);
     }
 
     @GetMapping("/transactions")

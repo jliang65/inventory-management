@@ -3,6 +3,7 @@ package com.jeff.inventorymanagement.service;
 import com.jeff.inventorymanagement.dto.InventoryTransactionResponse;
 import com.jeff.inventorymanagement.dto.StockAdjustRequest;
 import com.jeff.inventorymanagement.dto.StockInOutRequest;
+import com.jeff.inventorymanagement.dto.StockTransferRequest;
 import com.jeff.inventorymanagement.entity.Inventory;
 import com.jeff.inventorymanagement.entity.InventoryTransaction;
 import com.jeff.inventorymanagement.entity.Location;
@@ -211,5 +212,91 @@ public class InventoryTransactionService {
         InventoryTransaction record = inventoryTransactionRepository.save(transaction);
 
         return toResponse(record);
+    }
+
+    @Transactional
+    public List<InventoryTransactionResponse> transfer(StockTransferRequest request) {
+        // Make sure the product exists
+        Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found"));
+
+        // Make sure the origin exists
+        Location fromLocation = locationRepository.findById(request.getFromLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Source location not found"));
+
+        // Make sure the destination exists
+        Location toLocation = locationRepository.findById(request.getToLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Destination location not found"));
+
+        // Make sure the origin and destination are not the same
+        if (request.getFromLocationId().equals(request.getToLocationId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Source and destination locations must be different");
+        }
+
+        // Fetch source inventory
+        Inventory sourceInventory = inventoryService.findByProductIdAndLocationId(
+                request.getProductId(), request.getFromLocationId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "No inventory found for this product at the source location"));
+
+        // Make sure source inventory has enough stock
+        int sourcePreviousQuantity = sourceInventory.getQuantity();
+        if (sourcePreviousQuantity < request.getQuantity()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock");
+        }
+
+        // Update source inventory to reflect quantity change
+        int sourceNewQuantity = sourcePreviousQuantity - request.getQuantity();
+        sourceInventory.setQuantity(sourceNewQuantity);
+
+        // Fetch destination inventory; create it if it does not exist
+        Inventory destinationInventory = inventoryService.findByProductIdAndLocationId(
+                request.getProductId(), request.getToLocationId())
+            .orElseGet(() -> {
+                Inventory newInventory = new Inventory();
+                newInventory.setProduct(product);
+                newInventory.setLocation(toLocation);
+                return inventoryRepository.save(newInventory);
+            });
+
+        // Update destination inventory to reflect quantity change
+        int destinationPreviousQuantity = destinationInventory.getQuantity();
+        int destinationNewQuantity = destinationPreviousQuantity + request.getQuantity();
+        destinationInventory.setQuantity(destinationNewQuantity);
+
+        // Build the transfer-out transaction record
+        InventoryTransaction transferOut = new InventoryTransaction();
+        transferOut.setProduct(product);
+        transferOut.setLocation(fromLocation);
+        transferOut.setTransactionType(TransactionType.TRANSFER_OUT);
+        transferOut.setQuantity(request.getQuantity());
+        transferOut.setPreviousQuantity(sourcePreviousQuantity);
+        transferOut.setNewQuantity(sourceNewQuantity);
+        transferOut.setReason(request.getReason());
+
+        // Build the transfer-in transaction record
+        InventoryTransaction transferIn = new InventoryTransaction();
+        transferIn.setProduct(product);
+        transferIn.setLocation(toLocation);
+        transferIn.setTransactionType(TransactionType.TRANSFER_IN);
+        transferIn.setQuantity(request.getQuantity());
+        transferIn.setPreviousQuantity(destinationPreviousQuantity);
+        transferIn.setNewQuantity(destinationNewQuantity);
+        transferIn.setReason(request.getReason());
+
+        // Save both inventories
+        inventoryRepository.save(sourceInventory);
+        inventoryRepository.save(destinationInventory);
+
+        // Save both transactions (link them together before saving) 
+        transferOut = inventoryTransactionRepository.save(transferOut);
+        transferIn.setRelatedTransaction(transferOut);
+        transferIn = inventoryTransactionRepository.save(transferIn);
+        transferOut.setRelatedTransaction(transferIn);
+        transferOut = inventoryTransactionRepository.save(transferOut);
+
+        // Return both transaction responses
+        return List.of(toResponse(transferOut), toResponse(transferIn));
     }
 }

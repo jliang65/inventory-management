@@ -11,6 +11,8 @@ import com.jeff.inventorymanagement.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,24 +49,9 @@ public class InventoryService {
             .toList();
     }
 
-    public List<InventoryResponse> findFilteredAsResponse(Long productId, Long locationId) {
-        List<Inventory> results;
-        
-        if (productId != null && locationId != null) {
-            results = findByProductIdAndLocationId(productId, locationId)
-                .map(List::of)
-                .orElse(List.of());
-        } else if (productId != null) {
-            results = findByProductId(productId);
-        } else if (locationId != null) {
-            results = findByLocationId(locationId);
-        } else {
-            results = findAll();
-        }
-        
-        return results.stream()
-            .map(this::toResponse)
-            .toList();
+    public Page<InventoryResponse> findFilteredAsResponse(Long productId, Long locationId, Pageable pageable) {
+        return inventoryRepository.findFiltered(productId, locationId, pageable)
+            .map(this::toResponse);
     }
 
     public InventoryResponse toResponse(Inventory inventory) {

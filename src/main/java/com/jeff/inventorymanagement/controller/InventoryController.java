@@ -10,6 +10,8 @@ import com.jeff.inventorymanagement.service.InventoryService;
 import com.jeff.inventorymanagement.service.InventoryTransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import jakarta.validation.Valid;
 
@@ -60,10 +62,11 @@ public class InventoryController {
     }
 
     @GetMapping
-    public List<InventoryResponse> getInventory(
+    public Page<InventoryResponse> getInventory(
             @RequestParam(required = false) Long productId,
-            @RequestParam(required = false) Long locationId) {
-        return inventoryService.findFilteredAsResponse(productId, locationId);
+            @RequestParam(required = false) Long locationId,
+            Pageable pageable) {
+        return inventoryService.findFilteredAsResponse(productId, locationId, pageable);
     }
 
     @GetMapping("/{id}")

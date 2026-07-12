@@ -10,12 +10,23 @@ import com.jeff.inventorymanagement.repository.ProductRepository;
 import com.jeff.inventorymanagement.repository.SupplierRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 @Service
 public class ProductService {
+    private static final Map<String, String> SORT_COLUMNS = Map.of(
+        "unitPrice", "unit_price",
+        "categoryId", "category_id",
+        "supplierId", "supplier_id"
+    );
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
@@ -117,6 +128,27 @@ public class ProductService {
         return findAll().stream()
             .map(this::toResponse)
             .toList();
+    }
+
+    public Page<ProductResponse> findAllAsResponse(String search, Long categoryId, Long supplierId, Boolean active, Pageable pageable) {
+        return productRepository.findFiltered(search, categoryId, supplierId, active, toDatabasePageable(pageable))
+            .map(this::toResponse);
+    }
+
+    // Native SQL sorts by column names (unit_price), but clients send Java field names (unitPrice).
+    private Pageable toDatabasePageable(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        Sort dbSort = Sort.by(pageable.getSort().stream()
+            .map(order -> {
+                String column = SORT_COLUMNS.getOrDefault(order.getProperty(), order.getProperty());
+                return new Sort.Order(order.getDirection(), column);
+            })
+            .toList());
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), dbSort);
     }
 
     public ProductResponse findByIdAsResponse(Long id) {

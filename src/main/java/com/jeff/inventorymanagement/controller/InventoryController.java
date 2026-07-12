@@ -49,11 +49,12 @@ public class InventoryController {
     }
 
     @GetMapping("/transactions")
-    public List<InventoryTransactionResponse> getTransactions(
+    public Page<InventoryTransactionResponse> getTransactions(
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) Long locationId,
-            @RequestParam(required = false) String type) {
-        return inventoryTransactionService.findFilteredAsResponse(productId, locationId, type);
+            @RequestParam(required = false) String type,
+            Pageable pageable) {
+        return inventoryTransactionService.findFilteredAsResponse(productId, locationId, type, pageable);
     }
 
     @GetMapping("/transactions/{id}")

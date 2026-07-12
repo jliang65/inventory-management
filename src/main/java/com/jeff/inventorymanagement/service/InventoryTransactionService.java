@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -39,33 +41,12 @@ public class InventoryTransactionService {
         this.locationRepository = locationRepository;
     }
 
-    public List<InventoryTransactionResponse> findFilteredAsResponse(
-            Long productId, Long locationId, String type) {
+    public Page<InventoryTransactionResponse> findFilteredAsResponse(
+            Long productId, Long locationId, String type, Pageable pageable) {
         TransactionType transactionType = parseTransactionType(type);
 
-        List<InventoryTransaction> results;
-        if (productId != null && locationId != null) {
-            results = inventoryTransactionRepository.findByProductIdAndLocationIdOrderByCreatedAtDesc(
-                productId, locationId);
-        } else if (productId != null) {
-            results = inventoryTransactionRepository.findByProductIdOrderByCreatedAtDesc(productId);
-        } else if (locationId != null) {
-            results = inventoryTransactionRepository.findByLocationIdOrderByCreatedAtDesc(locationId);
-        } else if (transactionType != null) {
-            results = inventoryTransactionRepository.findByTransactionTypeOrderByCreatedAtDesc(transactionType);
-        } else {
-            results = inventoryTransactionRepository.findAllByOrderByCreatedAtDesc();
-        }
-
-        if (transactionType != null && (productId != null || locationId != null)) {
-            results = results.stream()
-                .filter(t -> t.getTransactionType() == transactionType)
-                .toList();
-        }
-
-        return results.stream()
-            .map(this::toResponse)
-            .toList();
+        return inventoryTransactionRepository.findFiltered(productId, locationId, transactionType, pageable)
+            .map(this::toResponse);
     }
 
     private TransactionType parseTransactionType(String type) {

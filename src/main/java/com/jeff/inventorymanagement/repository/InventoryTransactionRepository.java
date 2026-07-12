@@ -2,19 +2,21 @@ package com.jeff.inventorymanagement.repository;
 
 import com.jeff.inventorymanagement.entity.InventoryTransaction;
 import com.jeff.inventorymanagement.entity.TransactionType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import java.util.List;
 
 @Repository
 public interface InventoryTransactionRepository extends JpaRepository<InventoryTransaction, Long> {
-    List<InventoryTransaction> findAllByOrderByCreatedAtDesc();
 
-    List<InventoryTransaction> findByProductIdOrderByCreatedAtDesc(Long productId);
-
-    List<InventoryTransaction> findByLocationIdOrderByCreatedAtDesc(Long locationId);
-
-    List<InventoryTransaction> findByProductIdAndLocationIdOrderByCreatedAtDesc(Long productId, Long locationId);
-
-    List<InventoryTransaction> findByTransactionTypeOrderByCreatedAtDesc(TransactionType transactionType);
+    @Query("""
+        SELECT t FROM InventoryTransaction t
+        WHERE (:productId IS NULL OR t.product.id = :productId)
+          AND (:locationId IS NULL OR t.location.id = :locationId)
+          AND (:transactionType IS NULL OR t.transactionType = :transactionType)
+        """)
+    Page<InventoryTransaction> findFiltered(
+            Long productId, Long locationId, TransactionType transactionType, Pageable pageable);
 }

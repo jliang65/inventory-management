@@ -1,0 +1,30 @@
+# Build output (Maven rebuilds inside the container)
+target/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# Local-only config (don't bake into the image)
+**/application-local.properties
+.env
+
+# Docker files (not needed inside the build context)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+*.md
+todo.txt

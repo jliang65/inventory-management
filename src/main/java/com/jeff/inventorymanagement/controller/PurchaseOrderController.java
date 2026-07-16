@@ -1,0 +1,37 @@
+package com.jeff.inventorymanagement.controller;
+
+import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
+import com.jeff.inventorymanagement.entity.PurchaseOrderStatus;
+import com.jeff.inventorymanagement.service.PurchaseOrderService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/purchase-orders")
+public class PurchaseOrderController {
+
+    private final PurchaseOrderService purchaseOrderService;
+
+    public PurchaseOrderController(PurchaseOrderService purchaseOrderService) {
+        this.purchaseOrderService = purchaseOrderService;
+    }
+
+    @GetMapping
+    public Page<PurchaseOrderResponse> getPurchaseOrders(
+            @RequestParam(required = false) Long supplierId,
+            @RequestParam(required = false) Long destinationLocationId,
+            @RequestParam(required = false) PurchaseOrderStatus status,
+            Pageable pageable) {
+        return purchaseOrderService.findFilteredAsResponse(supplierId, destinationLocationId, status, pageable);
+    }
+
+    @GetMapping("/{id}")
+    public PurchaseOrderResponse getPurchaseOrderById(@PathVariable Long id) {
+        return purchaseOrderService.findByIdAsResponse(id);
+    }
+}

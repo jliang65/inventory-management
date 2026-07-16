@@ -16,9 +16,9 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
+  api:
     build: .
-    container_name: inventory-app
+    container_name: inventory-api
     ports:
       - "8080:8080"
     environment:

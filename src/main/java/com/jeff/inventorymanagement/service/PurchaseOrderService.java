@@ -64,7 +64,15 @@ public class PurchaseOrderService {
     public Page<PurchaseOrderResponse> findFilteredAsResponse(
             Long supplierId, Long destinationLocationId, PurchaseOrderStatus status, Pageable pageable) {
         return purchaseOrderRepository.findFiltered(supplierId, destinationLocationId, status, pageable)
-            .map(this::toResponse);
+            .map(purchaseOrder -> {
+                PurchaseOrderResponse response = toResponse(purchaseOrder);
+                List<PurchaseOrderItem> items = purchaseOrderItemRepository.findByPurchaseOrderId(purchaseOrder.getId());
+                BigDecimal totalCost = items.stream()
+                    .map(item -> item.getUnitCost().multiply(BigDecimal.valueOf(item.getOrderedQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+                response.setTotalCost(totalCost);
+                return response;
+            });
     }
 
     public PurchaseOrderResponse toResponse(PurchaseOrder purchaseOrder) {
@@ -102,7 +110,6 @@ public class PurchaseOrderService {
         purchaseOrder.setSupplier(supplier);
         purchaseOrder.setDestinationLocation(destinationLocation);
         purchaseOrder.setStatus(PurchaseOrderStatus.DRAFT);
-        purchaseOrder.setOrderDate(LocalDateTime.now());
         purchaseOrder.setNotes(request.getNotes());
 
         PurchaseOrder savedOrder = purchaseOrderRepository.save(purchaseOrder);
@@ -128,5 +135,27 @@ public class PurchaseOrderService {
         }
 
         return findByIdAsResponse(savedOrder.getId());
+    }
+
+    @Transactional
+    public PurchaseOrderResponse submit(Long id) {
+        PurchaseOrder purchaseOrder = findById(id);
+        
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only draft orders can be submitted");
+        }
+
+        List<PurchaseOrderItem> items = purchaseOrderItemRepository.findByPurchaseOrderId(id);
+        if (items.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Cannot submit an order with no items");
+        }
+        
+        purchaseOrder.setStatus(PurchaseOrderStatus.SUBMITTED);
+        purchaseOrder.setOrderDate(LocalDateTime.now());
+        purchaseOrderRepository.save(purchaseOrder);
+        
+        return findByIdAsResponse(id);
     }
 }

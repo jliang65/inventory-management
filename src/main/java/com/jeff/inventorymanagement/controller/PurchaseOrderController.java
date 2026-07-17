@@ -46,4 +46,10 @@ public class PurchaseOrderController {
     public PurchaseOrderResponse createPurchaseOrder(@Valid @RequestBody PurchaseOrderRequest request) {
         return purchaseOrderService.saveFromRequest(request);
     }
+
+    @PostMapping("/{id}/submit")
+    public PurchaseOrderResponse submitPurchaseOrder(@PathVariable Long id) {
+        return purchaseOrderService.submit(id);
+    }
+    
 }

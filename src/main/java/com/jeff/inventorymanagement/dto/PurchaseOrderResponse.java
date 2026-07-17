@@ -2,6 +2,7 @@ package com.jeff.inventorymanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.jeff.inventorymanagement.entity.PurchaseOrderStatus;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +18,7 @@ public class PurchaseOrderResponse {
     private LocalDate expectedDeliveryDate;
     private LocalDateTime receivedAt;
     private String notes;
+    private BigDecimal totalCost;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<PurchaseOrderItemResponse> items;
@@ -99,6 +101,14 @@ public class PurchaseOrderResponse {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public BigDecimal getTotalCost() {
+        return totalCost;
+    }
+
+    public void setTotalCost(BigDecimal totalCost) {
+        this.totalCost = totalCost;
     }
 
     public List<PurchaseOrderItemResponse> getItems() {

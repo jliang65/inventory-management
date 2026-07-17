@@ -51,5 +51,9 @@ public class PurchaseOrderController {
     public PurchaseOrderResponse submitPurchaseOrder(@PathVariable Long id) {
         return purchaseOrderService.submit(id);
     }
-    
+
+    @PostMapping("/{id}/receive")
+    public PurchaseOrderResponse receivePurchaseOrder(@PathVariable Long id) {
+        return purchaseOrderService.receive(id);
+    }
 }

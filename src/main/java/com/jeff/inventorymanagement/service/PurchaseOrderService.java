@@ -158,4 +158,20 @@ public class PurchaseOrderService {
         
         return findByIdAsResponse(id);
     }
+
+    @Transactional
+    public PurchaseOrderResponse receive(Long id) {
+        PurchaseOrder purchaseOrder = findById(id);
+
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.SUBMITTED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only submitted orders can be received");
+        }
+
+        purchaseOrder.setStatus(PurchaseOrderStatus.RECEIVED);
+        purchaseOrder.setReceivedAt(LocalDateTime.now());
+        purchaseOrderRepository.save(purchaseOrder);
+
+        return findByIdAsResponse(id);
+    }
 }

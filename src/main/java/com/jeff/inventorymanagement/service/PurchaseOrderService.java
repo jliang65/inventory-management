@@ -174,4 +174,24 @@ public class PurchaseOrderService {
 
         return findByIdAsResponse(id);
     }
+
+    @Transactional
+    public PurchaseOrderResponse cancel(Long id) {
+        PurchaseOrder purchaseOrder = findById(id);
+
+        if (purchaseOrder.getStatus() == PurchaseOrderStatus.RECEIVED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Received orders cannot be cancelled");
+        }
+
+        if (purchaseOrder.getStatus() == PurchaseOrderStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Order is already cancelled");
+        }
+
+        purchaseOrder.setStatus(PurchaseOrderStatus.CANCELLED);
+        purchaseOrderRepository.save(purchaseOrder);
+
+        return findByIdAsResponse(id);
+    }
 }

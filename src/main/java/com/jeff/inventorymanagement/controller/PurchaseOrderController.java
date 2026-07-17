@@ -56,4 +56,9 @@ public class PurchaseOrderController {
     public PurchaseOrderResponse receivePurchaseOrder(@PathVariable Long id) {
         return purchaseOrderService.receive(id);
     }
+
+    @PostMapping("/{id}/cancel")
+    public PurchaseOrderResponse cancelPurchaseOrder(@PathVariable Long id) {
+        return purchaseOrderService.cancel(id);
+    }
 }

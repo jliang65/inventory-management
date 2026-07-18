@@ -223,4 +223,32 @@ public class PurchaseOrderService {
 
         return findByIdAsResponse(id);
     }
+
+    @Transactional
+    public PurchaseOrderItemResponse addItem(Long orderId, PurchaseOrderItemRequest request) {
+        PurchaseOrder purchaseOrder = findById(orderId);
+
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Can only add items to draft orders");
+        }
+
+        Product product = productService.findById(request.getProductId());
+
+        // Make sure the supplier actually sells that product
+        if (product.getSupplier() == null ||
+                !product.getSupplier().getId().equals(purchaseOrder.getSupplier().getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Product " + product.getId() + " does not belong to supplier " + purchaseOrder.getSupplier().getId());
+        }
+
+        PurchaseOrderItem item = new PurchaseOrderItem();
+        item.setPurchaseOrder(purchaseOrder);
+        item.setProduct(product);
+        item.setOrderedQuantity(request.getOrderedQuantity());
+        item.setUnitCost(request.getUnitCost());
+
+        PurchaseOrderItem savedItem = purchaseOrderItemRepository.save(item);
+        return toItemResponse(savedItem);
+    }
 }

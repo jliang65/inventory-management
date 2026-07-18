@@ -1,5 +1,7 @@
 package com.jeff.inventorymanagement.controller;
 
+import com.jeff.inventorymanagement.dto.PurchaseOrderItemRequest;
+import com.jeff.inventorymanagement.dto.PurchaseOrderItemResponse;
 import com.jeff.inventorymanagement.dto.PurchaseOrderRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
 import com.jeff.inventorymanagement.dto.PurchaseOrderUpdateRequest;
@@ -62,6 +64,14 @@ public class PurchaseOrderController {
     @PostMapping("/{id}/cancel")
     public PurchaseOrderResponse cancelPurchaseOrder(@PathVariable Long id) {
         return purchaseOrderService.cancel(id);
+    }
+
+    @PostMapping("/{id}/items")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PurchaseOrderItemResponse addItemToPurchaseOrder(
+            @PathVariable Long id,
+            @Valid @RequestBody PurchaseOrderItemRequest request) {
+        return purchaseOrderService.addItem(id, request);
     }
 
     @PutMapping("/{id}")

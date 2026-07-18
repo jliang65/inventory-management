@@ -2,6 +2,7 @@ package com.jeff.inventorymanagement.controller;
 
 import com.jeff.inventorymanagement.dto.PurchaseOrderRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
+import com.jeff.inventorymanagement.dto.PurchaseOrderUpdateRequest;
 import com.jeff.inventorymanagement.entity.PurchaseOrderStatus;
 import com.jeff.inventorymanagement.service.PurchaseOrderService;
 import jakarta.validation.Valid;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,5 +62,12 @@ public class PurchaseOrderController {
     @PostMapping("/{id}/cancel")
     public PurchaseOrderResponse cancelPurchaseOrder(@PathVariable Long id) {
         return purchaseOrderService.cancel(id);
+    }
+
+    @PutMapping("/{id}")
+    public PurchaseOrderResponse updatePurchaseOrder(
+            @PathVariable Long id,
+            @Valid @RequestBody PurchaseOrderUpdateRequest request) {
+        return purchaseOrderService.update(id, request);
     }
 }

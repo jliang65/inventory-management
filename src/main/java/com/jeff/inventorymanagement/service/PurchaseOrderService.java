@@ -4,6 +4,7 @@ import com.jeff.inventorymanagement.dto.PurchaseOrderItemRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderItemResponse;
 import com.jeff.inventorymanagement.dto.PurchaseOrderRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
+import com.jeff.inventorymanagement.dto.PurchaseOrderUpdateRequest;
 import com.jeff.inventorymanagement.entity.Location;
 import com.jeff.inventorymanagement.entity.Product;
 import com.jeff.inventorymanagement.entity.PurchaseOrder;
@@ -190,6 +191,34 @@ public class PurchaseOrderService {
         }
 
         purchaseOrder.setStatus(PurchaseOrderStatus.CANCELLED);
+        purchaseOrderRepository.save(purchaseOrder);
+
+        return findByIdAsResponse(id);
+    }
+
+    @Transactional
+    public PurchaseOrderResponse update(Long id, PurchaseOrderUpdateRequest request) {
+        PurchaseOrder purchaseOrder = findById(id);
+
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Only draft orders can be updated");
+        }
+
+        if (!request.getSupplierId().equals(purchaseOrder.getSupplier().getId())) {
+            List<PurchaseOrderItem> items = purchaseOrderItemRepository.findByPurchaseOrderId(id);
+            if (!items.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Cannot change supplier on an order with items");
+            }
+            Supplier supplier = supplierService.findById(request.getSupplierId());
+            purchaseOrder.setSupplier(supplier);
+        }
+
+        Location destinationLocation = locationService.findById(request.getDestinationLocationId());
+
+        purchaseOrder.setDestinationLocation(destinationLocation);
+        purchaseOrder.setNotes(request.getNotes());
         purchaseOrderRepository.save(purchaseOrder);
 
         return findByIdAsResponse(id);

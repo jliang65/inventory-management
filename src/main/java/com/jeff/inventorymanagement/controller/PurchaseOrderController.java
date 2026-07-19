@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -88,5 +89,11 @@ public class PurchaseOrderController {
             @PathVariable Long id,
             @Valid @RequestBody PurchaseOrderUpdateRequest request) {
         return purchaseOrderService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}/items/{itemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteItem(@PathVariable Long id, @PathVariable Long itemId) {
+        purchaseOrderService.deleteItem(id, itemId);
     }
 }

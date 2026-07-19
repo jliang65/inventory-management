@@ -276,4 +276,24 @@ public class PurchaseOrderService {
         PurchaseOrderItem savedItem = purchaseOrderItemRepository.save(item);
         return toItemResponse(savedItem);
     }
+
+    @Transactional
+    public void deleteItem(Long orderId, Long itemId) {
+        PurchaseOrder purchaseOrder = findById(orderId);
+
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Can only delete items from draft orders");
+        }
+
+        PurchaseOrderItem item = purchaseOrderItemRepository.findById(itemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase order item not found"));
+
+        if (!item.getPurchaseOrder().getId().equals(orderId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Item does not belong to the specified purchase order");
+        }
+
+        purchaseOrderItemRepository.delete(item);
+    }
 }

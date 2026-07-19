@@ -2,6 +2,7 @@ package com.jeff.inventorymanagement.controller;
 
 import com.jeff.inventorymanagement.dto.PurchaseOrderItemRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderItemResponse;
+import com.jeff.inventorymanagement.dto.PurchaseOrderItemUpdateRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
 import com.jeff.inventorymanagement.dto.PurchaseOrderUpdateRequest;
@@ -72,6 +73,14 @@ public class PurchaseOrderController {
             @PathVariable Long id,
             @Valid @RequestBody PurchaseOrderItemRequest request) {
         return purchaseOrderService.addItem(id, request);
+    }
+
+    @PutMapping("/{id}/items/{itemId}")
+    public PurchaseOrderItemResponse updateItem(
+            @PathVariable Long id,
+            @PathVariable Long itemId,
+            @Valid @RequestBody PurchaseOrderItemUpdateRequest request) {
+        return purchaseOrderService.updateItem(id, itemId, request);
     }
 
     @PutMapping("/{id}")

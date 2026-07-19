@@ -2,6 +2,7 @@ package com.jeff.inventorymanagement.service;
 
 import com.jeff.inventorymanagement.dto.PurchaseOrderItemRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderItemResponse;
+import com.jeff.inventorymanagement.dto.PurchaseOrderItemUpdateRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
 import com.jeff.inventorymanagement.dto.PurchaseOrderUpdateRequest;
@@ -245,6 +246,30 @@ public class PurchaseOrderService {
         PurchaseOrderItem item = new PurchaseOrderItem();
         item.setPurchaseOrder(purchaseOrder);
         item.setProduct(product);
+        item.setOrderedQuantity(request.getOrderedQuantity());
+        item.setUnitCost(request.getUnitCost());
+
+        PurchaseOrderItem savedItem = purchaseOrderItemRepository.save(item);
+        return toItemResponse(savedItem);
+    }
+
+    @Transactional
+    public PurchaseOrderItemResponse updateItem(Long orderId, Long itemId, PurchaseOrderItemUpdateRequest request) {
+        PurchaseOrder purchaseOrder = findById(orderId);
+
+        if (purchaseOrder.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Can only update items on draft orders");
+        }
+
+        PurchaseOrderItem item = purchaseOrderItemRepository.findById(itemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase order item not found"));
+
+        if (!item.getPurchaseOrder().getId().equals(orderId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Item does not belong to the specified purchase order");
+        }
+
         item.setOrderedQuantity(request.getOrderedQuantity());
         item.setUnitCost(request.getUnitCost());
 

@@ -253,6 +253,16 @@ public class PurchaseOrderService {
 
         Product product = productService.findById(request.getProductId());
 
+        // Check if product already exists in this order
+        boolean productExists = purchaseOrderItemRepository.findByPurchaseOrderId(orderId)
+            .stream()
+            .anyMatch(item -> item.getProduct().getId().equals(request.getProductId()));
+
+        if (productExists) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Product " + request.getProductId() + " is already in this order");
+        }
+
         // Make sure the supplier actually sells that product
         if (product.getSupplier() == null ||
                 !product.getSupplier().getId().equals(purchaseOrder.getSupplier().getId())) {

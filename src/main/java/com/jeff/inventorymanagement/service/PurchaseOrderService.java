@@ -104,6 +104,7 @@ public class PurchaseOrderService {
         response.setProductSku(item.getProduct().getSku());
         response.setOrderedQuantity(item.getOrderedQuantity());
         response.setUnitCost(item.getUnitCost());
+        response.setLineTotal(item.getUnitCost().multiply(BigDecimal.valueOf(item.getOrderedQuantity())));
         return response;
     }
 

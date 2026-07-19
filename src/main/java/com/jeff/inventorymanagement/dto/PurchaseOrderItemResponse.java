@@ -9,6 +9,7 @@ public class PurchaseOrderItemResponse {
     private String productSku;
     private Integer orderedQuantity;
     private BigDecimal unitCost;
+    private BigDecimal lineTotal;
 
     public Long getId() {
         return id;
@@ -56,5 +57,13 @@ public class PurchaseOrderItemResponse {
 
     public void setUnitCost(BigDecimal unitCost) {
         this.unitCost = unitCost;
+    }
+
+    public BigDecimal getLineTotal() {
+        return lineTotal;
+    }
+
+    public void setLineTotal(BigDecimal lineTotal) {
+        this.lineTotal = lineTotal;
     }
 }

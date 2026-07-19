@@ -6,6 +6,7 @@ import com.jeff.inventorymanagement.dto.PurchaseOrderItemUpdateRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderRequest;
 import com.jeff.inventorymanagement.dto.PurchaseOrderResponse;
 import com.jeff.inventorymanagement.dto.PurchaseOrderUpdateRequest;
+import com.jeff.inventorymanagement.dto.StockInOutRequest;
 import com.jeff.inventorymanagement.entity.Location;
 import com.jeff.inventorymanagement.entity.Product;
 import com.jeff.inventorymanagement.entity.PurchaseOrder;
@@ -31,17 +32,20 @@ public class PurchaseOrderService {
     private final SupplierService supplierService;
     private final LocationService locationService;
     private final ProductService productService;
+    private final InventoryTransactionService inventoryTransactionService;
 
     public PurchaseOrderService(PurchaseOrderRepository purchaseOrderRepository,
                                 PurchaseOrderItemRepository purchaseOrderItemRepository,
                                 SupplierService supplierService,
                                 LocationService locationService,
-                                ProductService productService) {
+                                ProductService productService,
+                                InventoryTransactionService inventoryTransactionService) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.purchaseOrderItemRepository = purchaseOrderItemRepository;
         this.supplierService = supplierService;
         this.locationService = locationService;
         this.productService = productService;
+        this.inventoryTransactionService = inventoryTransactionService;
     }
 
     public PurchaseOrder findById(Long id) {
@@ -168,6 +172,19 @@ public class PurchaseOrderService {
         if (purchaseOrder.getStatus() != PurchaseOrderStatus.SUBMITTED) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Only submitted orders can be received");
+        }
+
+        //Inventory getting updated here
+        List<PurchaseOrderItem> items = purchaseOrderItemRepository.findByPurchaseOrderId(id);
+        Long destinationLocationId = purchaseOrder.getDestinationLocation().getId();
+
+        for (PurchaseOrderItem item : items) {
+            StockInOutRequest stockInRequest = new StockInOutRequest();
+            stockInRequest.setProductId(item.getProduct().getId());
+            stockInRequest.setLocationId(destinationLocationId);
+            stockInRequest.setQuantity(item.getOrderedQuantity());
+            stockInRequest.setReason("Received from PO #" + id);
+            inventoryTransactionService.stockIn(stockInRequest);
         }
 
         purchaseOrder.setStatus(PurchaseOrderStatus.RECEIVED);

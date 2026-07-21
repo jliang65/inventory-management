@@ -53,6 +53,10 @@ public class PurchaseOrderService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase order not found"));
     }
 
+    public boolean isDraft(Long id) {
+        return findById(id).getStatus() == PurchaseOrderStatus.DRAFT;
+    }
+
     public PurchaseOrderResponse findByIdAsResponse(Long id) {
         PurchaseOrder purchaseOrder = findById(id);
         PurchaseOrderResponse response = toResponse(purchaseOrder);

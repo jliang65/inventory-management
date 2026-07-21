@@ -15,6 +15,8 @@ public class InventoryTransactionResponse {
     private Integer newQuantity;
     private Long relatedTransactionId;
     private String reason;
+    private Long performedByUserId;
+    private String performedByEmail;
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -103,6 +105,22 @@ public class InventoryTransactionResponse {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public Long getPerformedByUserId() {
+        return performedByUserId;
+    }
+
+    public void setPerformedByUserId(Long performedByUserId) {
+        this.performedByUserId = performedByUserId;
+    }
+
+    public String getPerformedByEmail() {
+        return performedByEmail;
+    }
+
+    public void setPerformedByEmail(String performedByEmail) {
+        this.performedByEmail = performedByEmail;
     }
 
     public LocalDateTime getCreatedAt() {

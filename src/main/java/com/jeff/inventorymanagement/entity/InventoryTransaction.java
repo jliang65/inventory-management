@@ -45,6 +45,10 @@ public class InventoryTransaction {
     @JoinColumn(name = "related_transaction_id")
     private InventoryTransaction relatedTransaction;
 
+    @ManyToOne
+    @JoinColumn(name = "performed_by_user_id")
+    private User performedBy;
+
     private String reason;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -117,6 +121,14 @@ public class InventoryTransaction {
 
     public void setRelatedTransaction(InventoryTransaction relatedTransaction) {
         this.relatedTransaction = relatedTransaction;
+    }
+
+    public User getPerformedBy() {
+        return performedBy;
+    }
+
+    public void setPerformedBy(User performedBy) {
+        this.performedBy = performedBy;
     }
 
     public String getReason() {

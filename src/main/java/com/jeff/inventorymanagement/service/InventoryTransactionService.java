@@ -9,11 +9,15 @@ import com.jeff.inventorymanagement.entity.InventoryTransaction;
 import com.jeff.inventorymanagement.entity.Location;
 import com.jeff.inventorymanagement.entity.Product;
 import com.jeff.inventorymanagement.entity.TransactionType;
+import com.jeff.inventorymanagement.entity.User;
 import com.jeff.inventorymanagement.repository.InventoryRepository;
 import com.jeff.inventorymanagement.repository.InventoryTransactionRepository;
 import com.jeff.inventorymanagement.repository.LocationRepository;
 import com.jeff.inventorymanagement.repository.ProductRepository;
+import com.jeff.inventorymanagement.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,17 +32,28 @@ public class InventoryTransactionService {
     private final InventoryTransactionRepository inventoryTransactionRepository;
     private final ProductRepository productRepository;
     private final LocationRepository locationRepository;
+    private final UserRepository userRepository;
 
     public InventoryTransactionService(InventoryService inventoryService,
                                          InventoryRepository inventoryRepository,
                                          InventoryTransactionRepository inventoryTransactionRepository,
                                          ProductRepository productRepository,
-                                         LocationRepository locationRepository) {
+                                         LocationRepository locationRepository,
+                                         UserRepository userRepository) {
         this.inventoryService = inventoryService;
         this.inventoryRepository = inventoryRepository;
         this.inventoryTransactionRepository = inventoryTransactionRepository;
         this.productRepository = productRepository;
         this.locationRepository = locationRepository;
+        this.userRepository = userRepository;
+    }
+
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return null;
+        }
+        return userRepository.findByEmailIgnoreCase(auth.getName()).orElse(null);
     }
 
     public Page<InventoryTransactionResponse> findFilteredAsResponse(
@@ -83,6 +98,10 @@ public class InventoryTransactionService {
         response.setRelatedTransactionId(
             transaction.getRelatedTransaction() != null ? transaction.getRelatedTransaction().getId() : null);
         response.setReason(transaction.getReason());
+        if (transaction.getPerformedBy() != null) {
+            response.setPerformedByUserId(transaction.getPerformedBy().getId());
+            response.setPerformedByEmail(transaction.getPerformedBy().getEmail());
+        }
         response.setCreatedAt(transaction.getCreatedAt());
         return response;
     }
@@ -116,6 +135,7 @@ public class InventoryTransactionService {
         transaction.setPreviousQuantity(previousQuantity);
         transaction.setNewQuantity(newQuantity);
         transaction.setReason(request.getReason());
+        transaction.setPerformedBy(getCurrentUser());
 
         inventoryRepository.save(inventory);
         InventoryTransaction record = inventoryTransactionRepository.save(transaction);
@@ -152,6 +172,7 @@ public class InventoryTransactionService {
         transaction.setPreviousQuantity(previousQuantity);
         transaction.setNewQuantity(newQuantity);
         transaction.setReason(request.getReason());
+        transaction.setPerformedBy(getCurrentUser());
 
         inventoryRepository.save(inventory);
         InventoryTransaction record = inventoryTransactionRepository.save(transaction);
@@ -188,6 +209,7 @@ public class InventoryTransactionService {
         transaction.setPreviousQuantity(previousQuantity);
         transaction.setNewQuantity(newQuantity);
         transaction.setReason(request.getReason());
+        transaction.setPerformedBy(getCurrentUser());
 
         inventoryRepository.save(inventory);
         InventoryTransaction record = inventoryTransactionRepository.save(transaction);
@@ -246,6 +268,8 @@ public class InventoryTransactionService {
         int destinationNewQuantity = destinationPreviousQuantity + request.getQuantity();
         destinationInventory.setQuantity(destinationNewQuantity);
 
+        User currentUser = getCurrentUser();
+
         // Build the transfer-out transaction record
         InventoryTransaction transferOut = new InventoryTransaction();
         transferOut.setProduct(product);
@@ -255,6 +279,7 @@ public class InventoryTransactionService {
         transferOut.setPreviousQuantity(sourcePreviousQuantity);
         transferOut.setNewQuantity(sourceNewQuantity);
         transferOut.setReason(request.getReason());
+        transferOut.setPerformedBy(currentUser);
 
         // Build the transfer-in transaction record
         InventoryTransaction transferIn = new InventoryTransaction();
@@ -265,6 +290,7 @@ public class InventoryTransactionService {
         transferIn.setPreviousQuantity(destinationPreviousQuantity);
         transferIn.setNewQuantity(destinationNewQuantity);
         transferIn.setReason(request.getReason());
+        transferIn.setPerformedBy(currentUser);
 
         // Save both inventories
         inventoryRepository.save(sourceInventory);

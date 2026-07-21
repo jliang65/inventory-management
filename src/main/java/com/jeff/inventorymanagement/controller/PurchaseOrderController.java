@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -64,6 +65,7 @@ public class PurchaseOrderController {
     }
 
     @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STAFF') and @purchaseOrderService.isDraft(#id))")
     public PurchaseOrderResponse cancelPurchaseOrder(@PathVariable Long id) {
         return purchaseOrderService.cancel(id);
     }

@@ -261,6 +261,27 @@ class SmokeIntegrationTest {
             .andExpect(jsonPath("$.name").value("Admin Created Product"));
     }
 
+    // A seeded book description includes author Benjamín Labatut (accented í).
+    // Searching for "Benjamin" without the accent should still find that book
+    // via Postgres unaccent matching.
+    @Test
+    void productSearch_isAccentNeutral() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/products")
+                .param("search", "Benjamin")
+                .header("Authorization", "Bearer " + adminToken))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        JsonNode products = objectMapper.readTree(result.getResponse().getContentAsString())
+            .get("content");
+
+        assertThat(products.isArray()).isTrue();
+        assertThat(products).anyMatch(product ->
+            product.get("sku").asText().equals("BK-978-1681375663")
+                && product.get("description").asText().contains("Benjamín")
+        );
+    }
+
     private String login(String email, String password) throws Exception {
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

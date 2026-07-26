@@ -1,10 +1,9 @@
 # Stage 1: build the JAR
-FROM eclipse-temurin:17-jdk AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY pom.xml mvnw ./
-COPY .mvn .mvn
+COPY pom.xml .
 COPY src src
-RUN ./mvnw package -DskipTests
+RUN mvn package -DskipTests
 
 # Stage 2: run the JAR
 FROM eclipse-temurin:17-jre

@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -57,10 +59,17 @@ public class InventoryTransactionService {
     }
 
     public Page<InventoryTransactionResponse> findFilteredAsResponse(
-            Long productId, Long locationId, String type, Pageable pageable) {
+            Long productId, Long locationId, String type,
+            LocalDate startDate, LocalDate endDate, Pageable pageable) {
         TransactionType transactionType = parseTransactionType(type);
 
-        return inventoryTransactionRepository.findFiltered(productId, locationId, transactionType, pageable)
+        LocalDateTime startDateTime =
+            startDate == null ? null : startDate.atStartOfDay();
+        LocalDateTime endDateTime =
+            endDate == null ? null : endDate.plusDays(1).atStartOfDay();
+
+        return inventoryTransactionRepository.findFiltered(
+                productId, locationId, transactionType, startDateTime, endDateTime, pageable)
             .map(this::toResponse);
     }
 
@@ -89,6 +98,7 @@ public class InventoryTransactionService {
         response.setId(transaction.getId());
         response.setProductId(transaction.getProduct().getId());
         response.setProductName(transaction.getProduct().getName());
+        response.setProductSku(transaction.getProduct().getSku());
         response.setLocationId(transaction.getLocation().getId());
         response.setLocationName(transaction.getLocation().getName());
         response.setTransactionType(transaction.getTransactionType());

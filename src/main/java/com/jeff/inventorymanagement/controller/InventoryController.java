@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Valid;
 
@@ -53,8 +54,11 @@ public class InventoryController {
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) Long locationId,
             @RequestParam(required = false) String type,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             Pageable pageable) {
-        return inventoryTransactionService.findFilteredAsResponse(productId, locationId, type, pageable);
+        return inventoryTransactionService.findFilteredAsResponse(
+                productId, locationId, type, startDate, endDate, pageable);
     }
 
     @GetMapping("/transactions/{id}")

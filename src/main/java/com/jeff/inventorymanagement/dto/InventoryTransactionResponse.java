@@ -7,6 +7,7 @@ public class InventoryTransactionResponse {
     private Long id;
     private Long productId;
     private String productName;
+    private String productSku;
     private Long locationId;
     private String locationName;
     private TransactionType transactionType;
@@ -41,6 +42,14 @@ public class InventoryTransactionResponse {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getProductSku() {
+        return productSku;
+    }
+
+    public void setProductSku(String productSku) {
+        this.productSku = productSku;
     }
 
     public Long getLocationId() {

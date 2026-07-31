@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface InventoryTransactionRepository extends JpaRepository<InventoryTransaction, Long> {
 
@@ -16,7 +18,10 @@ public interface InventoryTransactionRepository extends JpaRepository<InventoryT
         WHERE (:productId IS NULL OR t.product.id = :productId)
           AND (:locationId IS NULL OR t.location.id = :locationId)
           AND (:transactionType IS NULL OR t.transactionType = :transactionType)
+          AND (CAST(:startDateTime AS LocalDateTime) IS NULL OR t.createdAt >= :startDateTime)
+          AND (CAST(:endDateTime AS LocalDateTime) IS NULL OR t.createdAt < :endDateTime)
         """)
     Page<InventoryTransaction> findFiltered(
-            Long productId, Long locationId, TransactionType transactionType, Pageable pageable);
+            Long productId, Long locationId, TransactionType transactionType,
+            LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable);
 }

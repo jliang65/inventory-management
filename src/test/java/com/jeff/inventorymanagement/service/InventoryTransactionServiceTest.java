@@ -45,8 +45,6 @@ import static org.mockito.Mockito.when;
 class InventoryTransactionServiceTest {
 
     @Mock
-    private InventoryService inventoryService;
-    @Mock
     private InventoryRepository inventoryRepository;
     @Mock
     private InventoryTransactionRepository inventoryTransactionRepository;
@@ -98,7 +96,7 @@ class InventoryTransactionServiceTest {
         Inventory inventory = makeInventory(50);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(inventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(inventory));
         when(inventoryRepository.save(inventory)).thenReturn(inventory);
 
         InventoryTransactionResponse response = inventoryTransactionService.stockIn(makeStockInOutRequest(25));
@@ -115,7 +113,7 @@ class InventoryTransactionServiceTest {
     void stockIn_createsInventoryWhenNoneExists() {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.empty());
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.empty());
         when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> {
             Inventory saved = invocation.getArgument(0);
             if (saved.getId() == null) {
@@ -143,7 +141,7 @@ class InventoryTransactionServiceTest {
         Inventory inventory = makeInventory(50);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(inventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(inventory));
         when(inventoryRepository.save(inventory)).thenReturn(inventory);
 
         InventoryTransactionResponse response = inventoryTransactionService.stockOut(makeStockInOutRequest(20));
@@ -160,7 +158,7 @@ class InventoryTransactionServiceTest {
         Inventory inventory = makeInventory(10);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(inventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(inventory));
 
         assertThatThrownBy(() -> inventoryTransactionService.stockOut(makeStockInOutRequest(25)))
             .isInstanceOf(ResponseStatusException.class)
@@ -180,7 +178,7 @@ class InventoryTransactionServiceTest {
         Inventory inventory = makeInventory(30);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(inventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(inventory));
         when(inventoryRepository.save(inventory)).thenReturn(inventory);
 
         InventoryTransactionResponse response = inventoryTransactionService.adjust(makeAdjustRequest(55));
@@ -197,7 +195,7 @@ class InventoryTransactionServiceTest {
         Inventory inventory = makeInventory(30);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(inventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(inventory));
         when(inventoryRepository.save(inventory)).thenReturn(inventory);
 
         InventoryTransactionResponse response = inventoryTransactionService.adjust(makeAdjustRequest(12));
@@ -229,8 +227,8 @@ class InventoryTransactionServiceTest {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
         when(locationRepository.findById(20L)).thenReturn(Optional.of(destinationLocation));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(sourceInventory));
-        when(inventoryService.findByProductIdAndLocationId(1L, 20L)).thenReturn(Optional.of(destinationInventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(sourceInventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 20L)).thenReturn(Optional.of(destinationInventory));
         when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         List<InventoryTransactionResponse> responses =
@@ -264,8 +262,8 @@ class InventoryTransactionServiceTest {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
         when(locationRepository.findById(20L)).thenReturn(Optional.of(destinationLocation));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(sourceInventory));
-        when(inventoryService.findByProductIdAndLocationId(1L, 20L)).thenReturn(Optional.empty());
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(sourceInventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 20L)).thenReturn(Optional.empty());
         when(inventoryRepository.save(any(Inventory.class))).thenAnswer(invocation -> {
             Inventory saved = invocation.getArgument(0);
             if (saved.getId() == null) {
@@ -313,7 +311,8 @@ class InventoryTransactionServiceTest {
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(locationRepository.findById(10L)).thenReturn(Optional.of(location));
         when(locationRepository.findById(20L)).thenReturn(Optional.of(destinationLocation));
-        when(inventoryService.findByProductIdAndLocationId(1L, 10L)).thenReturn(Optional.of(sourceInventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 10L)).thenReturn(Optional.of(sourceInventory));
+        when(inventoryRepository.findByProductIdAndLocationIdForUpdate(1L, 20L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> inventoryTransactionService.transfer(makeTransferRequest(15)))
             .isInstanceOf(ResponseStatusException.class)
@@ -348,7 +347,7 @@ class InventoryTransactionServiceTest {
                     .isEqualTo("Source and destination locations must be different");
             });
 
-        verify(inventoryService, never()).findByProductIdAndLocationId(any(), any());
+        verify(inventoryRepository, never()).findByProductIdAndLocationIdForUpdate(any(), any());
         verify(inventoryRepository, never()).save(any(Inventory.class));
     }
 

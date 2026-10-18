@@ -26,23 +26,21 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InventoryTransactionService {
-    private final InventoryService inventoryService;
     private final InventoryRepository inventoryRepository;
     private final InventoryTransactionRepository inventoryTransactionRepository;
     private final ProductRepository productRepository;
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
 
-    public InventoryTransactionService(InventoryService inventoryService,
-                                         InventoryRepository inventoryRepository,
+    public InventoryTransactionService(InventoryRepository inventoryRepository,
                                          InventoryTransactionRepository inventoryTransactionRepository,
                                          ProductRepository productRepository,
                                          LocationRepository locationRepository,
                                          UserRepository userRepository) {
-        this.inventoryService = inventoryService;
         this.inventoryRepository = inventoryRepository;
         this.inventoryTransactionRepository = inventoryTransactionRepository;
         this.productRepository = productRepository;
@@ -124,7 +122,8 @@ public class InventoryTransactionService {
         Location location = locationRepository.findById(request.getLocationId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
 
-        Inventory inventory = inventoryService.findByProductIdAndLocationId(
+        // Lock the row, then read and update quantity. A missing row is created below.
+        Inventory inventory = inventoryRepository.findByProductIdAndLocationIdForUpdate(
                 request.getProductId(), request.getLocationId())
             .orElseGet(() -> {
                 Inventory newInventory = new Inventory();
@@ -161,7 +160,8 @@ public class InventoryTransactionService {
         Location location = locationRepository.findById(request.getLocationId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
 
-        Inventory inventory = inventoryService.findByProductIdAndLocationId(
+        // Lock the row, then read and update quantity.
+        Inventory inventory = inventoryRepository.findByProductIdAndLocationIdForUpdate(
                 request.getProductId(), request.getLocationId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "No inventory found for this product and location"));
@@ -198,7 +198,8 @@ public class InventoryTransactionService {
         Location location = locationRepository.findById(request.getLocationId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location not found"));
 
-        Inventory inventory = inventoryService.findByProductIdAndLocationId(
+        // Lock the row, then read and update quantity. A missing row is created below.
+        Inventory inventory = inventoryRepository.findByProductIdAndLocationIdForUpdate(
                 request.getProductId(), request.getLocationId())
             .orElseGet(() -> {
                 Inventory newInventory = new Inventory();
@@ -247,9 +248,19 @@ public class InventoryTransactionService {
                 "Source and destination locations must be different");
         }
 
-        // Fetch source inventory
-        Inventory sourceInventory = inventoryService.findByProductIdAndLocationId(
-                request.getProductId(), request.getFromLocationId())
+        // Lock the lower location id first, so two transfers cannot lock the same rows in opposite orders.
+        Long firstLocationId = Math.min(request.getFromLocationId(), request.getToLocationId());
+        Long secondLocationId = Math.max(request.getFromLocationId(), request.getToLocationId());
+        Optional<Inventory> firstRow = inventoryRepository.findByProductIdAndLocationIdForUpdate(
+                request.getProductId(), firstLocationId);
+        Optional<Inventory> secondRow = inventoryRepository.findByProductIdAndLocationIdForUpdate(
+                request.getProductId(), secondLocationId);
+
+        boolean sourceIsFirst = request.getFromLocationId().equals(firstLocationId);
+        Optional<Inventory> sourceRow = sourceIsFirst ? firstRow : secondRow;
+        Optional<Inventory> destinationRow = sourceIsFirst ? secondRow : firstRow;
+
+        Inventory sourceInventory = sourceRow
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "No inventory found for this product at the source location"));
 
@@ -263,15 +274,13 @@ public class InventoryTransactionService {
         int sourceNewQuantity = sourcePreviousQuantity - request.getQuantity();
         sourceInventory.setQuantity(sourceNewQuantity);
 
-        // Fetch destination inventory; create it if it does not exist
-        Inventory destinationInventory = inventoryService.findByProductIdAndLocationId(
-                request.getProductId(), request.getToLocationId())
-            .orElseGet(() -> {
-                Inventory newInventory = new Inventory();
-                newInventory.setProduct(product);
-                newInventory.setLocation(toLocation);
-                return inventoryRepository.save(newInventory);
-            });
+        // Create the destination row only after the source has enough stock.
+        Inventory destinationInventory = destinationRow.orElseGet(() -> {
+            Inventory newInventory = new Inventory();
+            newInventory.setProduct(product);
+            newInventory.setLocation(toLocation);
+            return inventoryRepository.save(newInventory);
+        });
 
         // Update destination inventory to reflect quantity change
         int destinationPreviousQuantity = destinationInventory.getQuantity();
